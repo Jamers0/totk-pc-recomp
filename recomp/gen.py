@@ -612,7 +612,6 @@ def main():
     ap.add_argument('--modules', default='main,subsdk0,sdk')
     ap.add_argument('--jobs', type=int, help='emit workers (default: by free memory and CPU count)')
     ap.add_argument('--allyx-profile', action='store_true', help='cap C emission workers at 4 on the ROG Xbox Ally X')
-    ap.add_argument('--allyx-profile', action='store_true', help='cap C emission workers at 4 on the ROG Xbox Ally X')
     ap.add_argument('--limit', type=int, default=0, help='emit only the first N functions of each module')
     ap.add_argument('--chunk-fns', type=int, default=3000, help='functions per chunk at most')
     ap.add_argument('--chunk-bytes', type=int, default=3000000, help='estimated bytes of C per chunk')
