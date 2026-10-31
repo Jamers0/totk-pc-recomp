@@ -53,6 +53,7 @@ class App:
         self.bound = []                  # (widget, option, id, params) retranslated on a language switch
         self.vars = {n: tk.StringVar() for n in ('base', 'update', 'keys', 'dest')}
         self.vars['lang'] = tk.StringVar()
+        self.allyx_var = tk.BooleanVar(value=False)
         self.lang_code = default_game_language(ui_lang)
         self.screen = None
         self.fitted = None               # the (width, height) fit last gave the window
@@ -211,6 +212,8 @@ class App:
         self.form_error = ttk.Label(f, style='Err.TLabel', wraplength=620, justify='left')
         self.form_error.pack(anchor='w', pady=(8, 0))
         self.label(f, 'ui.keys_private', wraplength=620, justify='left').pack(anchor='w', pady=(8, 0))
+        self.allyx_check = ttk.Checkbutton(f, text='ROG Xbox Ally X: limitar a carga de instalação', variable=self.allyx_var)
+        self.allyx_check.pack(anchor='w', pady=(8, 0))
         return f
 
     def build_run(self):
@@ -307,6 +310,8 @@ class App:
         self.form_error.configure(text='')
         command = form.command(self.layout.python, root=self.layout.root if self.layout.dev else None,
                                temp=self.run_args.get('temp'), verify=self.run_args.get('verify', False))
+        if self.allyx_var.get():
+            command.append('--allyx-profile')
         self.begin(command, self.layout.root)
 
     def begin(self, command, cwd):
