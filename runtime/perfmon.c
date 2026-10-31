@@ -253,8 +253,8 @@ static void adl_sample(PerfStats *s) {
     adl.log.size = sizeof adl.log;
     if (adl.pmlog(adl.ctx, adl.index, &adl.log) != 0) return;
     const AdlSensor *v = adl.log.sensors;
-    if (s->gpu_pct < 0 && v[ADL_PMLOG_INFO_ACTIVITY_GFX].supported)   // the system's counters first
-        s->gpu_pct = (float)v[ADL_PMLOG_INFO_ACTIVITY_GFX].value;
+    if (v[ADL_PMLOG_INFO_ACTIVITY_GFX].supported)
+        s->gpu_pct_amd = (float)v[ADL_PMLOG_INFO_ACTIVITY_GFX].value;
     if (v[ADL_PMLOG_TEMPERATURE_EDGE].supported) s->gpu_temp_c = (float)v[ADL_PMLOG_TEMPERATURE_EDGE].value;
     else if (v[ADL_PMLOG_TEMPERATURE_HOTSPOT].supported) s->gpu_temp_c = (float)v[ADL_PMLOG_TEMPERATURE_HOTSPOT].value;
     // the whole card's draw where the driver reports it (RDNA 4 reports no ASIC power), else the GPU chip's
@@ -277,7 +277,7 @@ static struct {
 static void machine_clear(PerfStats *s) {
     s->cpu_total_pct = s->cpu_game_pct = s->cpu_temp_c = -1;
     s->ram_used_mb = s->ram_total_mb = s->ram_game_mb = -1;
-    s->gpu_pct = s->gpu_temp_c = s->gpu_power_w = s->gpu_clock_mhz = s->vram_used_mb = s->vram_total_mb = -1;
+    s->gpu_pct = s->gpu_pct_amd = s->gpu_temp_c = s->gpu_power_w = s->gpu_clock_mhz = s->vram_used_mb = s->vram_total_mb = -1;
 }
 
 static void machine_copy(PerfStats *d, const PerfStats *s) {
@@ -285,7 +285,8 @@ static void machine_copy(PerfStats *d, const PerfStats *s) {
     memcpy(d->gpu_name, s->gpu_name, sizeof d->gpu_name);
     d->cpu_total_pct = s->cpu_total_pct, d->cpu_game_pct = s->cpu_game_pct, d->cpu_temp_c = s->cpu_temp_c;
     d->ram_used_mb = s->ram_used_mb, d->ram_total_mb = s->ram_total_mb, d->ram_game_mb = s->ram_game_mb;
-    d->gpu_pct = s->gpu_pct, d->gpu_temp_c = s->gpu_temp_c, d->gpu_power_w = s->gpu_power_w;
+    d->gpu_pct = s->gpu_pct, d->gpu_pct_amd = s->gpu_pct_amd;
+    d->gpu_temp_c = s->gpu_temp_c, d->gpu_power_w = s->gpu_power_w;
     d->gpu_clock_mhz = s->gpu_clock_mhz, d->vram_used_mb = s->vram_used_mb, d->vram_total_mb = s->vram_total_mb;
 }
 
