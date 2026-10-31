@@ -1099,13 +1099,13 @@ static void perf_full_draw(const MenuTarget *t, float scale) {
     const ImVec4 gpu_c(0.55f, 0.83f, 0.31f, 1), cpu_c(0.18f, 0.59f, 0.80f, 1), ram_c(0.80f, 0.45f, 0.70f, 1),
         fps_c(0.95f, 0.95f, 0.95f, 1), wait_c(0.93f, 0.76f, 0.33f, 1), pic_c(0.62f, 0.70f, 0.95f, 1);
     if (ImGui::BeginTable("##perft", 4, ImGuiTableFlags_SizingFixedFit)) {
-        static const UiTextId labels[] = {UI_MENU_OV_GPU, UI_MENU_OV_VRAM, UI_MENU_OV_CPU, UI_MENU_OV_RAM};
+        static const UiTextId labels[] = {UI_MENU_OV_GPU, UI_MENU_OV_GPU_AMD, UI_MENU_OV_VRAM, UI_MENU_OV_CPU, UI_MENU_OV_RAM};
         static const PerfCol c0[] = {{UI_MENU_OV_FPS, 888}};
         static const PerfCol c1[] = {{UI_MENU_OV_FMT_PCT, 100}, {UI_MENU_OV_FMT_GB, 888.8f}, {UI_MENU_OV_FRAME_MS, 888.8f}};
         static const PerfCol c2[] = {{UI_MENU_OV_FMT_TEMP, 188}, {UI_MENU_OV_FMT_GB_OF, 888.8f}, {UI_MENU_OV_MAX_MS, 8888.8f}};
         static const PerfCol c3[] = {{UI_MENU_OV_FMT_POWER, 888}, {UI_MENU_OV_FMT_MHZ, 8888}, {UI_MENU_OV_GAME_PCT, 100},
                                      {UI_MENU_OV_GAME_GB, 888.8f}};
-        perf_column("##c0", c0, 1, labels, 4);
+        perf_column("##c0", c0, 1, labels, 5);
         perf_column("##c1", c1, 3);
         perf_column("##c2", c2, 3);
         perf_column("##c3", c3, 4);
@@ -1114,9 +1114,9 @@ static void perf_full_draw(const MenuTarget *t, float scale) {
         perf_cell(UI_MENU_OV_FMT_TEMP, s.gpu_temp_c);
         perf_cell(UI_MENU_OV_FMT_POWER, s.gpu_power_w);
         if (s.gpu_pct_amd >= 0) {
-            ImGui::TableNextColumn();
-            ImGui::TextColored(gpu_c, "%s", menu_text(UI_MENU_OV_GPU_AMD));
+            perf_label(UI_MENU_OV_GPU_AMD, gpu_c);
             perf_cell(UI_MENU_OV_FMT_PCT, s.gpu_pct_amd);
+            perf_cell(UI_MENU_OV_NONE, -1);
             perf_cell(UI_MENU_OV_NONE, -1);
         }
         perf_label(UI_MENU_OV_VRAM, gpu_c);
