@@ -703,6 +703,7 @@ def main():
     ap.add_argument('--modules', help='comma-separated subset of the layout modules (default all)')
     ap.add_argument('--jobs', type=int, help='parallel compiles (default: by memory budget and CPU count)')
     ap.add_argument('--allyx-profile', action='store_true', help='cap parallel C compiles at 6 on the ROG Xbox Ally X')
+    ap.add_argument('--allyx-profile', action='store_true', help='cap parallel C compiles at 6 on the ROG Xbox Ally X')
     ap.add_argument('--compile-only', action='store_true', help='compile, do not link')
     ap.add_argument('--runtime', type=Path, help='runtime source directory (default runtime)')
     ap.add_argument('--full-build', action='store_true',
@@ -792,6 +793,9 @@ def main():
     cpus = os.cpu_count() or 1
     budget = min(MEM_BUDGET, int(total_ram() * 0.8))
     jobs = args.jobs or max(1, min(cpus, budget // JOB_MEM))
+    if args.allyx_profile and args.jobs is None:
+        jobs = min(jobs, 6)
+        print(f'build_game: ROG Ally X profile caps compile jobs at {jobs}', flush=True)
     if args.allyx_profile and args.jobs is None:
         jobs = min(jobs, 6)
         print(f'build_game: ROG Ally X profile caps compile jobs at {jobs}', flush=True)
