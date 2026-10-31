@@ -1113,6 +1113,12 @@ static void perf_full_draw(const MenuTarget *t, float scale) {
         perf_cell(UI_MENU_OV_FMT_PCT, s.gpu_pct);
         perf_cell(UI_MENU_OV_FMT_TEMP, s.gpu_temp_c);
         perf_cell(UI_MENU_OV_FMT_POWER, s.gpu_power_w);
+        if (s.gpu_pct_amd >= 0) {
+            ImGui::TableNextColumn();
+            ImGui::TextColored(gpu_c, "%s", menu_text(UI_MENU_OV_GPU_AMD));
+            perf_cell(UI_MENU_OV_FMT_PCT, s.gpu_pct_amd);
+            perf_cell(UI_MENU_OV_NONE, -1);
+        }
         perf_label(UI_MENU_OV_VRAM, gpu_c);
         perf_cell(UI_MENU_OV_FMT_GB, perf_gb(s.vram_used_mb));
         perf_cell(UI_MENU_OV_FMT_GB_OF, perf_gb(s.vram_total_mb));
