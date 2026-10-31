@@ -611,6 +611,7 @@ def main():
     ap.add_argument('--out', type=Path, required=True)
     ap.add_argument('--modules', default='main,subsdk0,sdk')
     ap.add_argument('--jobs', type=int, help='emit workers (default: by free memory and CPU count)')
+    ap.add_argument('--allyx-profile', action='store_true', help='cap C emission workers at 4 on the ROG Xbox Ally X')
     ap.add_argument('--limit', type=int, default=0, help='emit only the first N functions of each module')
     ap.add_argument('--chunk-fns', type=int, default=3000, help='functions per chunk at most')
     ap.add_argument('--chunk-bytes', type=int, default=3000000, help='estimated bytes of C per chunk')
@@ -670,6 +671,9 @@ def main():
     t_emit = time.perf_counter()
     ctx = mp.get_context('spawn')
     jobs, why = pick_jobs(args.jobs)
+    if args.allyx_profile and args.jobs is None:
+        jobs = min(jobs, 4)
+        why += '; ROG Ally X profile caps workers at 4'
     print(f'emitting with {jobs} workers ({why})', file=sys.stderr, flush=True)
     with ctx.Pool(jobs, initializer=_worker_init, initargs=(paths, starts_abs, table, opts)) as pool:
         for i, r in enumerate(pool.imap_unordered(_emit_chunk, [t for _, t in tasks], chunksize=1)):
