@@ -26,7 +26,7 @@ typedef struct {
     // GPU: load and dedicated memory from the system's counters, temperature, power and clock from NVML (NVIDIA) or
     // ADL (AMD)
     char gpu_name[96];
-    float gpu_pct, gpu_temp_c, gpu_power_w, gpu_clock_mhz, vram_used_mb, vram_total_mb;
+    float gpu_pct, gpu_pct_amd, gpu_temp_c, gpu_power_w, gpu_clock_mhz, vram_used_mb, vram_total_mb;
     // per frame, averaged over the last half second: replay (NVN to Vulkan recording), GPU busy time (timestamps; -1
     // without them), the render thread's waits for pipeline builds, shader translation and texture uploads, and the
     // textures uploaded

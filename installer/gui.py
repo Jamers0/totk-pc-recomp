@@ -10,6 +10,7 @@ this file only draws. The window text is in installer/text/<en|ru>.json under "u
 import argparse
 import json
 import os
+import subprocess
 import sys
 import tkinter as tk
 from pathlib import Path
@@ -52,17 +53,24 @@ class App:
         self.bound = []                  # (widget, option, id, params) retranslated on a language switch
         self.vars = {n: tk.StringVar() for n in ('base', 'update', 'keys', 'dest')}
         self.vars['lang'] = tk.StringVar()
+        self.allyx_var = tk.BooleanVar(value=False)
         self.lang_code = default_game_language(ui_lang)
         self.screen = None
         self.fitted = None               # the (width, height) fit last gave the window
 
         root.title(self.cat('ui.title'))
         icon = layout.runtime / 'totk.ico'
+        png = layout.runtime / 'totk.png'   # Tk loads no .ico off Windows; the Linux release converts it
         if os.name == 'nt' and icon.is_file():
             root.iconbitmap(default=str(icon))
+        elif png.is_file():
+            self.icon = tk.PhotoImage(file=str(png))
+            root.iconphoto(True, self.icon)
         root.protocol('WM_DELETE_WINDOW', self.on_close)
+        self.ui_font = 'Segoe UI' if os.name == 'nt' else 'DejaVu Sans'
+        self.mono_font = 'Consolas' if os.name == 'nt' else 'DejaVu Sans Mono'
         style = ttk.Style(root)
-        style.configure('Title.TLabel', font=('Segoe UI', 15, 'bold'))
+        style.configure('Title.TLabel', font=(self.ui_font, 15, 'bold'))
         style.configure('Notice.TLabel', background='#fff3cd', foreground='#664d03', padding=8)
         style.configure('Err.TLabel', foreground='#c01c28')
         style.configure('Version.TLabel', foreground='#808080')
@@ -204,6 +212,8 @@ class App:
         self.form_error = ttk.Label(f, style='Err.TLabel', wraplength=620, justify='left')
         self.form_error.pack(anchor='w', pady=(8, 0))
         self.label(f, 'ui.keys_private', wraplength=620, justify='left').pack(anchor='w', pady=(8, 0))
+        self.allyx_check = ttk.Checkbutton(f, text='ROG Xbox Ally X: limitar a carga de instalação', variable=self.allyx_var)
+        self.allyx_check.pack(anchor='w', pady=(8, 0))
         return f
 
     def build_run(self):
@@ -214,7 +224,7 @@ class App:
         self.cancel_button.pack(side='right')
         self.log_toggle = self.button(bar, 'ui.show_log', self.toggle_log)
         self.log_toggle.pack(side='left')
-        self.run_header = ttk.Label(f, font=('Segoe UI', 11, 'bold'))
+        self.run_header = ttk.Label(f, font=(self.ui_font, 11, 'bold'))
         self.run_header.pack(anchor='w')
         self.step_rows = {}
         self.steps_box = ttk.Frame(f)
@@ -228,7 +238,7 @@ class App:
         self.warn_label = ttk.Label(f, wraplength=620, justify='left', foreground='#9a6700')
         self.warn_label.pack(anchor='w')
         self.log_frame = ttk.Frame(f)
-        self.log = tk.Text(self.log_frame, height=10, wrap='word', state='disabled', font=('Consolas', 9))
+        self.log = tk.Text(self.log_frame, height=10, wrap='word', state='disabled', font=(self.mono_font, 9))
         scroll = ttk.Scrollbar(self.log_frame, command=self.log.yview)
         self.log.configure(yscrollcommand=scroll.set)
         scroll.pack(side='right', fill='y')
@@ -266,8 +276,9 @@ class App:
         state = form.installed_state()
         if state is not None:
             self.update_hint.configure(text=self.cat('ui.update_mode'))
-            if state.get('lang') in ini.LANGUAGES and not self.lang_touched:
-                self.vars['lang'].set(self.lang_label(state['lang']))
+            recorded = ini.canonical_language(state.get('lang'))
+            if recorded in ini.LANGUAGES and not self.lang_touched:
+                self.vars['lang'].set(self.lang_label(recorded))
         else:
             self.update_hint.configure(text='')
         self.fit()
@@ -299,6 +310,8 @@ class App:
         self.form_error.configure(text='')
         command = form.command(self.layout.python, root=self.layout.root if self.layout.dev else None,
                                temp=self.run_args.get('temp'), verify=self.run_args.get('verify', False))
+        if self.allyx_var.get():
+            command.append('--allyx-profile')
         self.begin(command, self.layout.root)
 
     def begin(self, command, cwd):
@@ -372,7 +385,7 @@ class App:
             glyph.configure(text=GLYPH[state], foreground=COLOR[state])
             name.configure(text=self.cat('step.' + s) + (f'  ({self.cat("ui.state_" + state)})'
                                                           if state in (SKIPPED, FAILED) else ''),
-                           font=('Segoe UI', 10, 'bold') if state == RUNNING else ('Segoe UI', 10))
+                           font=(self.ui_font, 10, 'bold') if state == RUNNING else (self.ui_font, 10))
         mode = m.mode or 'install'
         self.run_header.configure(text=self.cat('ui.running_' + mode if mode in ('install', 'resume', 'update')
                                                 else 'ui.running_install'))
@@ -477,7 +490,11 @@ class App:
     def open_folder(self):
         dest = self.model.dest
         if dest and Path(dest).is_dir():
-            os.startfile(dest)
+            if os.name == 'nt':
+                os.startfile(dest)
+            else:
+                subprocess.Popen(['xdg-open', dest], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                                 start_new_session=True)
 
 
 # ---- self test ---------------------------------------------------------------------------------------------------
