@@ -555,8 +555,10 @@ class Lift(Step):
             if m:
                 rep.progress('lift', 'emit', int(m.group(1)), int(m.group(2)), 'chunks')
 
-        code, log = run_tool(ctx, 'lift', layout.recomp / 'gen.py',
-                             ['--exefs', ctx.dest / 'exefs', '--out', gen, '--patches', layout.patches(game_version(ctx))], parse)
+        gen_args = ['--exefs', ctx.dest / 'exefs', '--out', gen, '--patches', layout.patches(game_version(ctx))]
+        if getattr(ctx.options, 'allyx_profile', False):
+            gen_args.append('--allyx-profile')
+        code, log = run_tool(ctx, 'lift', layout.recomp / 'gen.py', gen_args, parse)
         if code:
             raise InstallError('lift.failed', code=code, log=str(log))
         (gen / STAMP).write_text(ctx.keys['lift'] + '\n')
@@ -606,7 +608,8 @@ class Compile(Step):
             '--runtime', layout.runtime, '--runtime-lib', layout.runtime_lib, '--ninja', layout.ninja,
             '--version', version_tag(game_version(ctx)), '--expected', layout.expected(game_version(ctx)),
             '--exefs', dest / 'exefs', '--romfs', dest / 'romfs',
-            '--profile', dest / 'profile'], parse)
+            '--profile', dest / 'profile',
+            *(['--allyx-profile'] if getattr(ctx.options, 'allyx_profile', False) else [])], parse)
         exe = build / ('totk' + EXE)
         if code or not exe.is_file():
             raise InstallError('compile.failed', code=code, log=str(log))
